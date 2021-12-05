@@ -4,7 +4,7 @@ import javax.persistence.*;
 import java.io.Serializable;
 
 @Entity
-@Table(name="rating")
+@Table(name="rating", indexes = @Index(columnList = "book_id"))
 public class Rating {
     @Embeddable
     public static class RatingId implements Serializable {
