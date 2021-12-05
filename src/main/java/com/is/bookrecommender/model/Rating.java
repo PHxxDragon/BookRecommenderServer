@@ -18,6 +18,11 @@ public class Rating {
 
         }
 
+        public RatingId(Long bookId, Long userId) {
+            this.bookId = bookId;
+            this.userId = userId;
+        }
+
         public Long getBookId() {
             return bookId;
         }
@@ -36,7 +41,7 @@ public class Rating {
     }
 
     @EmbeddedId
-    private RatingId id;
+    private RatingId id = new RatingId();
 
     @ManyToOne
     @MapsId("bookId")
@@ -52,7 +57,6 @@ public class Rating {
 
 
     public Rating() {
-
     }
 
     public RatingId getId() {
