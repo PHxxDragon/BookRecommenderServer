@@ -6,6 +6,8 @@ public class BookDto {
     private String authors;
     private Integer publishedYear;
     private String imageURL;
+    private Double rating;
+    private Integer userRating;
 
     public BookDto() {
 
@@ -49,5 +51,21 @@ public class BookDto {
 
     public void setImageURL(String imageURL) {
         this.imageURL = imageURL;
+    }
+
+    public Double getRating() {
+        return rating;
+    }
+
+    public void setRating(Double rating) {
+        this.rating = rating;
+    }
+
+    public Integer getUserRating() {
+        return userRating;
+    }
+
+    public void setUserRating(Integer userRating) {
+        this.userRating = userRating;
     }
 }
