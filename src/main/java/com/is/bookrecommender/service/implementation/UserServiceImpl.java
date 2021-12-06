@@ -2,25 +2,28 @@ package com.is.bookrecommender.service.implementation;
 
 import com.is.bookrecommender.dto.UserDto;
 import com.is.bookrecommender.exception.UsernameExistedException;
+import com.is.bookrecommender.io.FileUpload;
 import com.is.bookrecommender.mapper.ApplicationMapper;
 import com.is.bookrecommender.model.User;
 import com.is.bookrecommender.repository.AuthorityRepository;
 import com.is.bookrecommender.repository.UserRepository;
 import com.is.bookrecommender.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
+import org.springframework.web.multipart.MultipartFile;
 
-import java.security.Principal;
+import java.io.IOException;
 import java.util.List;
 
 @Service
 @Transactional
 public class UserServiceImpl implements UserService {
-
     @Autowired
     private UserRepository userRepository;
 
@@ -32,6 +35,9 @@ public class UserServiceImpl implements UserService {
 
     @Autowired
     private AuthorityRepository authorityRepository;
+
+    @Value("${avatar.resources.folder}")
+    private String avatarDir;
 
     @Override
     public UserDetails loadUserByUsername(String s) throws UsernameNotFoundException {
@@ -90,5 +96,19 @@ public class UserServiceImpl implements UserService {
         return s == null || s.isEmpty() || s.isBlank();
     }
 
+    @Override
+    public UserDto updateUserAvatar(MultipartFile image, String name) throws IOException {
+        String extension = StringUtils.getFilenameExtension(image.getOriginalFilename());
+        String filename = name + (!isStringEmpty(extension) ? "." + extension : "");
+        User existed = userRepository.findUserByUsername(name);
+        if (existed == null) {
+            throw new UsernameNotFoundException("Username not found with username: " + name);
+        }
 
+        String uploadDir = avatarDir + "/" + existed.getId();
+        FileUpload.saveFile(uploadDir, filename, image);
+
+        existed.setAvatarURL(uploadDir + "/" + filename);
+        return mapper.mapUserToUserDto(existed);
+    }
 }

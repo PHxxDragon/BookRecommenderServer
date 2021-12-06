@@ -6,6 +6,7 @@ public class UserDto {
     private String mail;
     private String country;
     private Integer age;
+    private String avatar;
 
     //Only pass this from client to server
     private String password;
@@ -56,5 +57,13 @@ public class UserDto {
 
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    public String getAvatar() {
+        return avatar;
+    }
+
+    public void setAvatar(String avatar) {
+        this.avatar = avatar;
     }
 }

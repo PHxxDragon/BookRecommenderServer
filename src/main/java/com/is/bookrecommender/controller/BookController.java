@@ -25,7 +25,7 @@ public class BookController {
     }
 
     @PostMapping("books/{id}/rating")
-    public ResponseEntity<?> updateRating(@PathVariable Long id, Principal user, @RequestParam(required = false) Integer rating) throws ResourceNotFoundException {
+    public ResponseEntity<?> updateRating(@PathVariable Long id, Principal user, @RequestParam(required = false, name = "rating") Integer rating) throws ResourceNotFoundException {
         RatingDto ratingDto = bookService.updateBookRating(id, user, rating);
         return ResponseEntity.ok(ratingDto);
     }

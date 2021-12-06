@@ -30,6 +30,7 @@ public class ApplicationMapper {
         userDto.setCountry(user.getCountry());
         userDto.setMail(user.getMail());
         userDto.setName(user.getName());
+        userDto.setAvatar(user.getAvatarURL());
         return  userDto;
     }
 

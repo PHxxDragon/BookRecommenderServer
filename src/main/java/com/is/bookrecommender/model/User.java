@@ -43,6 +43,9 @@ public class User implements UserDetails {
     @Column
     private Boolean enabled;
 
+    @Column
+    private String avatarURL;
+
     public User() {
 
     }
@@ -139,5 +142,13 @@ public class User implements UserDetails {
 
     public Boolean getEnabled() {
         return enabled;
+    }
+
+    public String getAvatarURL() {
+        return avatarURL;
+    }
+
+    public void setAvatarURL(String avatarURL) {
+        this.avatarURL = avatarURL;
     }
 }
