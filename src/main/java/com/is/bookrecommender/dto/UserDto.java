@@ -7,6 +7,9 @@ public class UserDto {
     private String country;
     private Integer age;
 
+    //Only pass this from client to server
+    private String password;
+
     public String getUsername() {
         return username;
     }
@@ -45,5 +48,13 @@ public class UserDto {
 
     public void setAge(Integer age) {
         this.age = age;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
     }
 }

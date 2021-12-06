@@ -1,9 +1,11 @@
 package com.is.bookrecommender.mapper;
 
 import com.is.bookrecommender.dto.BookDto;
+import com.is.bookrecommender.dto.RatingDto;
 import com.is.bookrecommender.dto.UserDto;
 import com.is.bookrecommender.model.Author;
 import com.is.bookrecommender.model.Book;
+import com.is.bookrecommender.model.Rating;
 import com.is.bookrecommender.model.User;
 import org.springframework.stereotype.Component;
 
@@ -29,5 +31,23 @@ public class ApplicationMapper {
         userDto.setMail(user.getMail());
         userDto.setName(user.getName());
         return  userDto;
+    }
+
+    public User mapUserDtoToUser(UserDto userDto) {
+        User user = new User();
+        user.setUsername(userDto.getUsername());
+        user.setPassword(userDto.getPassword());
+        user.setMail(userDto.getMail());
+        user.setCountry(userDto.getCountry());
+        user.setName(userDto.getName());
+        return user;
+    }
+
+    public RatingDto ratingToRatingDto(Rating rating) {
+        RatingDto ratingDto = new RatingDto();
+        ratingDto.setRating(rating.getRating());
+        ratingDto.setBookId(rating.getBook().getId());
+        ratingDto.setUsername(rating.getUser().getUsername());
+        return ratingDto;
     }
 }
