@@ -41,6 +41,7 @@ public class ApplicationMapper {
         user.setMail(userDto.getMail());
         user.setCountry(userDto.getCountry());
         user.setName(userDto.getName());
+        user.setAge(userDto.getAge());
         return user;
     }
 
