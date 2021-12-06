@@ -2,6 +2,7 @@ package com.is.bookrecommender.service.implementation;
 
 import com.is.bookrecommender.dto.BookDto;
 import com.is.bookrecommender.dto.RatingDto;
+import com.is.bookrecommender.dto.SearchDto;
 import com.is.bookrecommender.exception.ResourceNotFoundException;
 import com.is.bookrecommender.mapper.ApplicationMapper;
 import com.is.bookrecommender.model.Book;
@@ -11,6 +12,9 @@ import com.is.bookrecommender.repository.BookRepository;
 import com.is.bookrecommender.repository.RatingRepository;
 import com.is.bookrecommender.service.BookService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -79,4 +83,12 @@ public class BookServiceImpl implements BookService {
             }
         }
     }
+
+    @Override
+    public Page<BookDto> searchBook(SearchDto searchDto) {
+        Pageable pageable = PageRequest.of(searchDto.getPageNum(), searchDto.getPageSize());
+        return bookRepository.findBookByTitleContains(searchDto.getKeyword(), pageable).map(applicationMapper::mapBookToBookDto);
+    }
+
+
 }
