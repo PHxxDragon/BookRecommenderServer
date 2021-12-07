@@ -15,4 +15,6 @@ public interface BookService {
     PageResponseDto<BookDto> searchBook(SearchDto searchDto);
 
     PageResponseDto<BookDto> getBookRecommendation(Principal user, PageRequestDto pageDto) throws CannotRetrieveWebResponseException;
+
+    PageResponseDto<BookDto> getPopularBook(PageRequestDto pageDto) throws CannotRetrieveWebResponseException;
 }

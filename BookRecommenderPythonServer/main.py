@@ -26,6 +26,7 @@ user_id_to_idx_path = file_path + "user_id_to_idx.pkl"
 user_idx_to_id_path = file_path + "user_idx_to_id.pkl"
 indices_path = file_path + "indices.pkl"
 similarities_path = file_path + "similarities.pkl"
+popularity_path = file_path + "popularity.pkl"
 
 
 def save_arbitrary_obj(obj, filename):
@@ -67,9 +68,6 @@ def get_user_ratings_from_user_id(user_id):
 
 
 def train():
-    # download_file_from_postgres()
-
-    df_books = pd.read_csv(book_file_path, usecols=['id', 'title'])
     df_ratings = pd.read_csv(rating_file_path, usecols=['user_id', 'book_id', 'rating'])
 
     num_users = len(df_ratings.user_id.unique())
@@ -89,13 +87,15 @@ def train():
     df_users_cnt = pd.DataFrame(df_ratings_drop_books.groupby('user_id').size(), columns=['count'])
 
     # filter data
-    ratings_thres = 150
+    ratings_thres = 130
     active_users = list(set(df_users_cnt.query('count >= @ratings_thres').index))
     df_ratings_drop_users = df_ratings_drop_books[df_ratings_drop_books.user_id.isin(active_users)]
     print('shape of original ratings data: ', df_ratings.shape)
     print('shape of ratings data after dropping both unpopular movies and inactive users: ',
           df_ratings_drop_users.shape)
     print('number of active user: ', len(active_users))
+
+    del df_ratings
 
     # pivot and create book-user matrix
     book_user_mat = df_ratings_drop_users.pivot(index='book_id', columns='user_id', values='rating')
@@ -180,6 +180,26 @@ def train():
     save_arbitrary_obj(user_idx_to_id, user_idx_to_id_path)
 
 
+def train_popularity():
+    df_ratings = pd.read_csv(rating_file_path, usecols=['user_id', 'book_id', 'rating'])
+    df_books_cnt = pd.DataFrame(df_ratings.groupby('book_id').size(), columns=['num_rating'])
+    df_books_cnt['average'] = df_ratings.groupby('book_id').mean()['rating']
+
+    C = df_books_cnt.num_rating.quantile([0.25]).iloc[0]
+    m = np.sum(df_books_cnt['average'] * df_books_cnt['num_rating']) / np.sum(df_books_cnt['num_rating'])
+
+    df_books_cnt['bayes_average'] = ((df_books_cnt['average'] * df_books_cnt['num_rating']) + C * m)
+
+    popular_arr = np.array(df_books_cnt.sort_values('bayes_average', ascending=False).index)
+
+    save_arbitrary_obj(popular_arr, popularity_path)
+
+
+def predict_popularity():
+    popular_arr = load_arbitrary_obj(popularity_path)
+    return popular_arr.tolist()
+
+
 def predict(user_id):
     similarities = load_arbitrary_obj(similarities_path)
     indices = load_arbitrary_obj(indices_path)
@@ -226,8 +246,6 @@ def predict(user_id):
     predicted_ratings = np.nansum((user_ratings[indices_filtered] * top_k_similarity), axis=1) / np.sum(
         top_k_similarity, axis=1)
 
-    print(np.sum(invalids_arr))
-
     predicted_ratings[invalids_arr] = np.nan
 
     result = {}
@@ -240,7 +258,9 @@ def predict(user_id):
 
 class Train(Resource):
     def get(self):
+        # download_file_from_postgres()
         train()
+        train_popularity()
         return Response(status=200)
 
 
@@ -249,8 +269,14 @@ class Predict(Resource):
         return predict(user_id)
 
 
+class PredictPopularity(Resource):
+    def get(self):
+        return predict_popularity()
+
+
 api.add_resource(Train, '/train')
 api.add_resource(Predict, '/predict/<int:user_id>')
+api.add_resource(PredictPopularity, '/predict/popular')
 
 
 if __name__ == '__main__':

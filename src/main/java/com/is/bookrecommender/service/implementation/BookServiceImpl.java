@@ -13,6 +13,7 @@ import com.is.bookrecommender.repository.UserRepository;
 import com.is.bookrecommender.service.BookService;
 import com.is.bookrecommender.service.UserService;
 import com.querydsl.core.Tuple;
+import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -23,6 +24,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.reactive.function.client.ClientResponse;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClient.*;
 import reactor.core.publisher.Mono;
@@ -35,6 +37,8 @@ import java.util.stream.Collectors;
 @Transactional
 public class BookServiceImpl implements BookService {
     public static String predictURI = "/predict";
+    public static String predictPopularityURI = "/predict/popular";
+
     @Autowired
     private BookRepository bookRepository;
 
@@ -116,24 +120,26 @@ public class BookServiceImpl implements BookService {
         return applicationMapper.pageToPageResponseDto(bookPage);
     }
 
+    private Mono<String> processResponse(ClientResponse response) {
+        if (response.statusCode()
+                .equals(HttpStatus.OK)) {
+            return response.bodyToMono(String.class);
+        } else if (response.statusCode()
+                .is4xxClientError()) {
+            return Mono.just("Error response");
+        } else {
+            return response.createException()
+                    .flatMap(Mono::error);
+        }
+    }
+
     @Override
     public PageResponseDto<BookDto> getBookRecommendation(Principal user, PageRequestDto pageDto) throws CannotRetrieveWebResponseException {
         User userObj = userRepository.findUserByUsername(user.getName());
         WebClient webclient = WebClient.create(recommenderServer);
         UriSpec<RequestBodySpec> uriSpec = webclient.method(HttpMethod.GET);
         RequestBodySpec requestBodySpec = uriSpec.uri(predictURI + "/" + userObj.getId());
-        Mono<String> responseMono = requestBodySpec.exchangeToMono(response -> {
-            if (response.statusCode()
-                    .equals(HttpStatus.OK)) {
-                return response.bodyToMono(String.class);
-            } else if (response.statusCode()
-                    .is4xxClientError()) {
-                return Mono.just("Error response");
-            } else {
-                return response.createException()
-                        .flatMap(Mono::error);
-            }
-        });
+        Mono<String> responseMono = requestBodySpec.exchangeToMono(this::processResponse);
         String responseText = responseMono.block();
         if (responseText.equals("Error response")) {
             throw new CannotRetrieveWebResponseException(responseText);
@@ -153,6 +159,39 @@ public class BookServiceImpl implements BookService {
                 .collect(Collectors.toList());
         Page<BookDto> bookDtoPage = bookRepository
                 .findBooksByIdIn(s, PageRequest.of(pageDto.getPageNum(), pageDto.getPageSize()))
+                .map(applicationMapper::mapBookToBookDto);
+
+        Set<Long> book_ids = bookDtoPage.map(BookDto::getId).stream().collect(Collectors.toSet());
+        Map<Long, Double> ratings = ratingRepository.getAverageRatings(book_ids);
+
+        for (int i = 0; i < bookDtoPage.getNumberOfElements(); i++) {
+            BookDto bookDto = bookDtoPage.getContent().get(i);
+            bookDto.setRating(ratings.get(bookDto.getId()));
+        }
+
+        return applicationMapper.pageToPageResponseDto(bookDtoPage);
+    }
+
+    @Override
+    public PageResponseDto<BookDto> getPopularBook(PageRequestDto pageDto) throws CannotRetrieveWebResponseException {
+        WebClient webclient = WebClient.create(recommenderServer);
+        Mono<String> resultMono = webclient.method(HttpMethod.GET)
+                .uri(predictPopularityURI)
+                .exchangeToMono(this::processResponse);
+
+        String responseText = resultMono.block();
+        if (responseText.equals("Error response")) {
+            throw new CannotRetrieveWebResponseException(responseText);
+        }
+
+        JSONArray jsonArray = new JSONArray(responseText);
+        List<Long> ids = new ArrayList<>();
+        for (int i = 0; i < jsonArray.length(); i++) {
+            ids.add(jsonArray.getLong(i));
+        }
+
+        Page<BookDto> bookDtoPage = bookRepository
+                .findBooksByIdIn(ids, PageRequest.of(pageDto.getPageNum(), pageDto.getPageSize()))
                 .map(applicationMapper::mapBookToBookDto);
 
         Set<Long> book_ids = bookDtoPage.map(BookDto::getId).stream().collect(Collectors.toSet());

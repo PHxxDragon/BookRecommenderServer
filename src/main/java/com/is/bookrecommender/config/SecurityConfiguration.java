@@ -55,6 +55,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
         http.authorizeRequests((request)->request.antMatchers("/api/v1/auth/login").permitAll());
         http.authorizeRequests((request)->request.antMatchers("/api/v1/books/{id:[0-9]+}").permitAll());
         http.authorizeRequests((request)->request.antMatchers("/api/v1/books/search").permitAll());
+        http.authorizeRequests((request)->request.antMatchers("/api/v1/books/popular").permitAll());
         http.authorizeRequests((request)->request.antMatchers("/api/v1/user/signup").permitAll());
         http.authorizeRequests((request)->request.antMatchers("/"+ avatarDir + "/**").permitAll());
         http.authorizeRequests().anyRequest().authenticated();

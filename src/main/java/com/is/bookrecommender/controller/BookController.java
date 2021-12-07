@@ -29,15 +29,21 @@ public class BookController {
         return ResponseEntity.ok(ratingDto);
     }
 
-    @PostMapping("books/search")
+    @GetMapping("books/search")
     public ResponseEntity<?> searchBook(SearchDto searchDto) {
         PageResponseDto<BookDto> bookPage = bookService.searchBook(searchDto);
         return ResponseEntity.ok(bookPage);
     }
 
-    @PostMapping("books/recommendation")
+    @GetMapping("books/recommendation")
     public ResponseEntity<?> getBookRecommendation(Principal user, PageRequestDto pageDto) throws CannotRetrieveWebResponseException {
         PageResponseDto<BookDto> bookPage = bookService.getBookRecommendation(user, pageDto);
+        return ResponseEntity.ok(bookPage);
+    }
+
+    @GetMapping ("books/popular")
+    public ResponseEntity<?> getPopularBook(PageRequestDto pageDto) throws CannotRetrieveWebResponseException {
+        PageResponseDto<BookDto> bookPage = bookService.getPopularBook(pageDto);
         return ResponseEntity.ok(bookPage);
     }
 }
