@@ -1,14 +1,10 @@
 package com.is.bookrecommender.controller;
 
-import com.is.bookrecommender.dto.BookDto;
-import com.is.bookrecommender.dto.RatingDto;
-import com.is.bookrecommender.dto.SearchDto;
+import com.is.bookrecommender.dto.*;
+import com.is.bookrecommender.exception.CannotRetrieveWebResponseException;
 import com.is.bookrecommender.exception.ResourceNotFoundException;
-import com.is.bookrecommender.model.Book;
-import com.is.bookrecommender.model.Rating;
 import com.is.bookrecommender.service.BookService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -35,7 +31,13 @@ public class BookController {
 
     @PostMapping("books/search")
     public ResponseEntity<?> searchBook(SearchDto searchDto) {
-        Page<BookDto> bookPage = bookService.searchBook(searchDto);
+        PageResponseDto<BookDto> bookPage = bookService.searchBook(searchDto);
+        return ResponseEntity.ok(bookPage);
+    }
+
+    @PostMapping("books/recommendation")
+    public ResponseEntity<?> getBookRecommendation(Principal user, PageRequestDto pageDto) throws CannotRetrieveWebResponseException {
+        PageResponseDto<BookDto> bookPage = bookService.getBookRecommendation(user, pageDto);
         return ResponseEntity.ok(bookPage);
     }
 }

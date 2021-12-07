@@ -1,12 +1,14 @@
 package com.is.bookrecommender.mapper;
 
 import com.is.bookrecommender.dto.BookDto;
+import com.is.bookrecommender.dto.PageResponseDto;
 import com.is.bookrecommender.dto.RatingDto;
 import com.is.bookrecommender.dto.UserDto;
 import com.is.bookrecommender.model.Author;
 import com.is.bookrecommender.model.Book;
 import com.is.bookrecommender.model.Rating;
 import com.is.bookrecommender.model.User;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Component;
 
 import java.util.stream.Collectors;
@@ -51,5 +53,13 @@ public class ApplicationMapper {
         ratingDto.setBookId(rating.getBook().getId());
         ratingDto.setUsername(rating.getUser().getUsername());
         return ratingDto;
+    }
+
+    public <T> PageResponseDto<T> pageToPageResponseDto(Page<T> page) {
+        PageResponseDto<T> pageResponseDto = new PageResponseDto<>();
+        pageResponseDto.setContent(page.getContent());
+        pageResponseDto.setTotalPage(page.getTotalPages());
+        pageResponseDto.setLast(page.isLast());
+        return pageResponseDto;
     }
 }

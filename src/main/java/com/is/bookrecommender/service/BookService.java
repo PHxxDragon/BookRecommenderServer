@@ -1,8 +1,7 @@
 package com.is.bookrecommender.service;
 
-import com.is.bookrecommender.dto.BookDto;
-import com.is.bookrecommender.dto.RatingDto;
-import com.is.bookrecommender.dto.SearchDto;
+import com.is.bookrecommender.dto.*;
+import com.is.bookrecommender.exception.CannotRetrieveWebResponseException;
 import com.is.bookrecommender.exception.ResourceNotFoundException;
 import org.springframework.data.domain.Page;
 
@@ -13,5 +12,7 @@ public interface BookService {
 
     RatingDto updateBookRating(Long id, Principal user, Integer rating) throws ResourceNotFoundException;
 
-    Page<BookDto> searchBook(SearchDto searchDto);
+    PageResponseDto<BookDto> searchBook(SearchDto searchDto);
+
+    PageResponseDto<BookDto> getBookRecommendation(Principal user, PageRequestDto pageDto) throws CannotRetrieveWebResponseException;
 }

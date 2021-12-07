@@ -53,14 +53,12 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
         http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
         http.exceptionHandling().authenticationEntryPoint(authenticationEntryPoint);
         http.authorizeRequests((request)->request.antMatchers("/api/v1/auth/login").permitAll());
-        http.authorizeRequests((request)->request.antMatchers("/api/v1/books/{id}").permitAll());
+        http.authorizeRequests((request)->request.antMatchers("/api/v1/books/{id:[0-9]+}").permitAll());
         http.authorizeRequests((request)->request.antMatchers("/api/v1/books/search").permitAll());
         http.authorizeRequests((request)->request.antMatchers("/api/v1/user/signup").permitAll());
         http.authorizeRequests((request)->request.antMatchers("/"+ avatarDir + "/**").permitAll());
         http.authorizeRequests().anyRequest().authenticated();
         http.addFilterBefore(new JWTAuthenticationFilter(userService, jwtTokenHelper), UsernamePasswordAuthenticationFilter.class);
-        // http.formLogin();
-        // http.httpBasic();
         http.csrf().disable().cors().and().headers().frameOptions().disable();
     }
 }

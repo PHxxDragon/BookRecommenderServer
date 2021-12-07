@@ -5,7 +5,7 @@ import java.io.Serializable;
 import java.util.Objects;
 
 @Entity
-@Table(name="rating", indexes = @Index(columnList = "book_id"))
+@Table(name="rating", indexes = {@Index(columnList = "book_id"), @Index(columnList = "user_id")})
 public class Rating {
     @Embeddable
     public static class RatingId implements Serializable {
