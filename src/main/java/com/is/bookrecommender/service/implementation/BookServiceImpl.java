@@ -3,10 +3,13 @@ package com.is.bookrecommender.service.implementation;
 import com.is.bookrecommender.dto.*;
 import com.is.bookrecommender.exception.CannotRetrieveWebResponseException;
 import com.is.bookrecommender.exception.ResourceNotFoundException;
+import com.is.bookrecommender.io.FileUpload;
 import com.is.bookrecommender.mapper.ApplicationMapper;
+import com.is.bookrecommender.model.Author;
 import com.is.bookrecommender.model.Book;
 import com.is.bookrecommender.model.Rating;
 import com.is.bookrecommender.model.User;
+import com.is.bookrecommender.repository.AuthorRepository;
 import com.is.bookrecommender.repository.BookRepository;
 import com.is.bookrecommender.repository.RatingRepository;
 import com.is.bookrecommender.repository.UserRepository;
@@ -24,11 +27,14 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.reactive.function.client.ClientResponse;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClient.*;
 import reactor.core.publisher.Mono;
 
+import java.io.IOException;
 import java.security.Principal;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -49,6 +55,9 @@ public class BookServiceImpl implements BookService {
     private UserRepository userRepository;
 
     @Autowired
+    private AuthorRepository authorRepository;
+
+    @Autowired
     private ApplicationMapper applicationMapper;
 
     @Autowired
@@ -56,6 +65,9 @@ public class BookServiceImpl implements BookService {
 
     @Value("${recommender.server}")
     private String recommenderServer;
+
+    @Value("${book.resources.folder}")
+    private String bookDir;
 
     public BookDto getBookFromBookId(Long id, Principal user) throws ResourceNotFoundException {
         Optional<Book> book = bookRepository.findById(id);
@@ -205,5 +217,61 @@ public class BookServiceImpl implements BookService {
         return applicationMapper.pageToPageResponseDto(bookDtoPage);
     }
 
+    private boolean isStringEmpty(String s) {
+        return s == null || s.isEmpty() || s.isBlank();
+    }
 
+    @Override
+    public BookDto addBook(BookDto bookDto, MultipartFile image) throws IOException {
+        Book book = applicationMapper.mapBookDtoToBook(bookDto);
+        book.setId(null);
+        if (bookDto.getAuthors() != null) {
+            List<Author> authorList = Arrays.stream(bookDto.getAuthors().split(",")).map(this::processAuthor).collect(Collectors.toList());
+            authorRepository.saveAll(authorList);
+            book.setAuthor(authorList);
+        }
+        book = bookRepository.save(book);
+        if (image != null) {
+            String extension = StringUtils.getFilenameExtension(image.getOriginalFilename());
+            String filename = book.getId() + (!isStringEmpty(extension) ? "." + extension : "");
+            FileUpload.saveFile(bookDir, filename, image);
+            book.setImageURL(bookDir + "/" + filename);
+        }
+        return applicationMapper.mapBookToBookDto(book);
+    }
+
+    @Override
+    public BookDto updateBook(BookDto bookDto, MultipartFile image) throws ResourceNotFoundException, IOException {
+        Optional<Book> bookOptional = bookRepository.findById(bookDto.getId());
+        if (!bookOptional.isPresent()) {
+            throw new ResourceNotFoundException(bookDto.getId(), " Book not found");
+        }
+
+        Book book = bookOptional.get();
+        if (bookDto.getTitle() != null && !isStringEmpty(bookDto.getTitle())) book.setTitle(bookDto.getTitle());
+        if (bookDto.getPublishedYear() != null) book.setPublishYear(bookDto.getPublishedYear());
+        if (bookDto.getAuthors() != null) {
+            List<Author> authorList = Arrays.stream(bookDto.getAuthors().split(",")).map(this::processAuthor).collect(Collectors.toList());
+            if (authorList.size() > 0) {
+                authorRepository.saveAll(authorList);
+                book.setAuthor(authorList);
+            }
+        }
+        if (image != null) {
+            String extension = StringUtils.getFilenameExtension(image.getOriginalFilename());
+            String filename = book.getId() + (!isStringEmpty(extension) ? "." + extension : "");
+            FileUpload.saveFile(bookDir, filename, image);
+            book.setImageURL(bookDir + "/" + filename);
+        }
+        return applicationMapper.mapBookToBookDto(book);
+    }
+
+    private Author processAuthor(String s) {
+        Author author = authorRepository.findAuthorByName(s);
+        if (author == null) {
+            author = new Author();
+            author.setName(s);
+        }
+        return author;
+    }
 }

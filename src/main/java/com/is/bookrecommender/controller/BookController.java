@@ -7,7 +7,9 @@ import com.is.bookrecommender.service.BookService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.security.Principal;
 
 @RestController
@@ -45,5 +47,17 @@ public class BookController {
     public ResponseEntity<?> getPopularBook(PageRequestDto pageDto) throws CannotRetrieveWebResponseException {
         PageResponseDto<BookDto> bookPage = bookService.getPopularBook(pageDto);
         return ResponseEntity.ok(bookPage);
+    }
+
+    @PostMapping("books/add")
+    public ResponseEntity<?> addBook(BookDto bookDto, @RequestParam(required = false) MultipartFile image) throws IOException {
+        BookDto bookDto1 = bookService.addBook(bookDto, image);
+        return ResponseEntity.ok(bookDto1);
+    }
+
+    @PostMapping("books/update")
+    public ResponseEntity<?> updateBook(BookDto bookDto, @RequestParam(required = false) MultipartFile image) throws ResourceNotFoundException, IOException {
+        BookDto bookDto1 = bookService.updateBook(bookDto, image);
+        return ResponseEntity.ok(bookDto1);
     }
 }

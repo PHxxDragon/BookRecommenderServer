@@ -11,6 +11,8 @@ import com.is.bookrecommender.model.User;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.stream.Collectors;
 
 @Component
@@ -61,5 +63,13 @@ public class ApplicationMapper {
         pageResponseDto.setTotalPage(page.getTotalPages());
         pageResponseDto.setLast(page.isLast());
         return pageResponseDto;
+    }
+
+    public Book mapBookDtoToBook(BookDto bookDto) {
+        Book book = new Book();
+        book.setId(bookDto.getId());
+        book.setPublishYear(bookDto.getPublishedYear());
+        book.setTitle(bookDto.getTitle());
+        return book;
     }
 }
