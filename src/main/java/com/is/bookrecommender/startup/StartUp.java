@@ -105,11 +105,33 @@ public class StartUp {
         return DriverManager.getConnection(url, username, password);
     }
 
-    //@PostConstruct
+    @PostConstruct
     public void init() throws IOException {
-        init1();
-        init2();
-        init3();
+//        init1();
+//        init2();
+//        init3();
+        init4();
+    }
+
+    private void init4() {
+        List<Authority> authorityList = new ArrayList<>();
+        authorityList.add(entityManager.getReference(Authority.class, 1l));
+        authorityList.add(createAuthority("ADMIN", "Admin role"));
+        authorityRepository.saveAll(authorityList);
+
+        String password = passwordEncoder.encode("password");
+
+        User user = new User();
+        user.setId((long) 20000);
+        user.setUsername("username" + 20000);
+        user.setPassword(password);
+        user.setEnabled(true);
+        user.setName("name" + 20000);
+        user.setMail("username" + 20000 + "@gmail.com");
+        user.setCountry("USA");
+        user.setAge(20);
+        user.setAuthorities(authorityList);
+        userRepository.save(user);
     }
 
     private void init2() throws IOException {

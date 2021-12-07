@@ -58,6 +58,8 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
         http.authorizeRequests((request)->request.antMatchers("/api/v1/books/popular").permitAll());
         http.authorizeRequests((request)->request.antMatchers("/api/v1/user/signup").permitAll());
         http.authorizeRequests((request)->request.antMatchers("/"+ avatarDir + "/**").permitAll());
+        http.authorizeRequests((request)->request.antMatchers("/api/v1/books/add").hasAuthority("ADMIN"));
+        http.authorizeRequests((request)->request.antMatchers("/api/v1/books/update").hasAuthority("ADMIN"));
         http.authorizeRequests().anyRequest().authenticated();
         http.addFilterBefore(new JWTAuthenticationFilter(userService, jwtTokenHelper), UsernamePasswordAuthenticationFilter.class);
         http.csrf().disable().cors().and().headers().frameOptions().disable();
