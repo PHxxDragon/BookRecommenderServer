@@ -270,6 +270,26 @@ public class BookServiceImpl implements BookService {
         return applicationMapper.mapBookToBookDto(book);
     }
 
+    @Override
+    public PageResponseDto<BookDto> getBookRateHistory(Principal user, PageRequestDto pageDto) {
+        User userObj = userRepository.findUserByUsername(user.getName());
+        var rated = ratingRepository.getRatedBook(userObj.getId());
+
+        Page<BookDto> bookDtoPage = bookRepository
+                .findBooksByIdIn(rated, PageRequest.of(pageDto.getPageNum(), pageDto.getPageSize()))
+                .map(applicationMapper::mapBookToBookDto);
+
+        Set<Long> book_ids = bookDtoPage.map(BookDto::getId).stream().collect(Collectors.toSet());
+        Map<Long, Double> ratings = ratingRepository.getAverageRatings(book_ids);
+
+        for (int i = 0; i < bookDtoPage.getNumberOfElements(); i++) {
+            BookDto bookDto = bookDtoPage.getContent().get(i);
+            bookDto.setRating(ratings.get(bookDto.getId()));
+        }
+
+        return applicationMapper.pageToPageResponseDto(bookDtoPage);
+    }
+
     private Author processAuthor(String s) {
         Author author = authorRepository.findAuthorByName(s);
         if (author == null) {
@@ -278,4 +298,6 @@ public class BookServiceImpl implements BookService {
         }
         return author;
     }
+
+
 }

@@ -60,4 +60,10 @@ public class BookController {
         BookDto bookDto1 = bookService.updateBook(bookDto, image);
         return ResponseEntity.ok(bookDto1);
     }
+
+    @GetMapping("books/history")
+    public ResponseEntity<?> getBookRateHistory(Principal user, PageRequestDto pageDto) {
+        PageResponseDto<BookDto> bookPage = bookService.getBookRateHistory(user, pageDto);
+        return ResponseEntity.ok(bookPage);
+    }
 }

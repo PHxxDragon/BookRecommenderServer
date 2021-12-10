@@ -23,4 +23,6 @@ public interface BookService {
     BookDto addBook(BookDto bookDto, MultipartFile image) throws IOException;
 
     BookDto updateBook(BookDto bookDto, MultipartFile image) throws ResourceNotFoundException, IOException;
+
+    PageResponseDto<BookDto> getBookRateHistory(Principal user, PageRequestDto pageDto);
 }
