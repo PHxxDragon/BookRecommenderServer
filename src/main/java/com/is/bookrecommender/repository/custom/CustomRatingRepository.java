@@ -10,4 +10,6 @@ public interface CustomRatingRepository {
     Double getAverageRating(Long book_id);
 
     Map<Long, Double> getAverageRatings(Set<Long> book_id);
+
+    List<Long> getRatedBook(Long user_id);
 }

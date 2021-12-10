@@ -169,6 +169,10 @@ public class BookServiceImpl implements BookService {
                 .sorted(Comparator.comparingDouble(Map.Entry::getValue))
                 .map(entry -> entry.getKey())
                 .collect(Collectors.toList());
+
+        var rated = ratingRepository.getRatedBook(userObj.getId());
+        s.removeAll(rated);
+
         Page<BookDto> bookDtoPage = bookRepository
                 .findBooksByIdIn(s, PageRequest.of(pageDto.getPageNum(), pageDto.getPageSize()))
                 .map(applicationMapper::mapBookToBookDto);

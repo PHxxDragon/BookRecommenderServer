@@ -45,4 +45,14 @@ public class CustomRatingRepositoryImpl implements CustomRatingRepository{
 
         return ratings;
     }
+
+    public List<Long> getRatedBook(Long user_id) {
+        QRating rating = QRating.rating1;
+        var result = new JPAQuery<>(entityManager)
+                .select(rating.book.id)
+                .from(rating)
+                .where(rating.user.id.eq(user_id))
+                .fetch();
+        return result;
+    }
 }
