@@ -8,6 +8,8 @@ import com.is.bookrecommender.model.Author;
 import com.is.bookrecommender.model.Book;
 import com.is.bookrecommender.model.Rating;
 import com.is.bookrecommender.model.User;
+import com.is.bookrecommender.service.UserService;
+import com.is.bookrecommender.service.implementation.UserServiceImpl;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Component;
 
@@ -35,6 +37,7 @@ public class ApplicationMapper {
         userDto.setMail(user.getMail());
         userDto.setName(user.getName());
         userDto.setAvatar(user.getAvatarURL());
+        userDto.setAdmin(UserService.isAdmin());
         return  userDto;
     }
 

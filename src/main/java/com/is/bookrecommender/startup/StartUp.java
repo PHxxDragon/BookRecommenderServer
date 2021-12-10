@@ -110,7 +110,7 @@ public class StartUp {
 //        init1();
 //        init2();
 //        init3();
-        init4();
+//        init4();
     }
 
     private void init4() {

@@ -7,6 +7,7 @@ public class UserDto {
     private String country;
     private Integer age;
     private String avatar;
+    private Boolean isAdmin;
 
     //Only pass this from client to server
     private String password;
@@ -65,5 +66,13 @@ public class UserDto {
 
     public void setAvatar(String avatar) {
         this.avatar = avatar;
+    }
+
+    public Boolean getAdmin() {
+        return isAdmin;
+    }
+
+    public void setAdmin(Boolean admin) {
+        isAdmin = admin;
     }
 }
