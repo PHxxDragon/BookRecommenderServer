@@ -19,6 +19,12 @@ public class BookController {
     @Autowired
     private BookService bookService;
 
+    @GetMapping("books/history")
+    public ResponseEntity<?> getBookRateHistory(Principal user, PageRequestDto pageDto) {
+        PageResponseDto<BookDto> bookPage = bookService.getBookRateHistory(user, pageDto);
+        return ResponseEntity.ok(bookPage);
+    }
+
     @GetMapping("/books/{id}")
     public ResponseEntity<?> getBookInfo(@PathVariable Long id, Principal user) throws ResourceNotFoundException {
         BookDto bookDto = bookService.getBookFromBookId(id, user);
@@ -59,11 +65,5 @@ public class BookController {
     public ResponseEntity<?> updateBook(BookDto bookDto, @RequestParam(required = false) MultipartFile image) throws ResourceNotFoundException, IOException {
         BookDto bookDto1 = bookService.updateBook(bookDto, image);
         return ResponseEntity.ok(bookDto1);
-    }
-
-    @GetMapping("books/history")
-    public ResponseEntity<?> getBookRateHistory(Principal user, PageRequestDto pageDto) {
-        PageResponseDto<BookDto> bookPage = bookService.getBookRateHistory(user, pageDto);
-        return ResponseEntity.ok(bookPage);
     }
 }
